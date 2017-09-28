@@ -1,4 +1,4 @@
-import webbrowser, requests, bs4, re, math
+import webbrowser, requests, bs4, re, math, statistics
 #Green PC Computer Price Estimator
 #by DeMarco Best II
 #This program seeks to scrape ebay for part prices and use them to estimate average pc parts
@@ -97,33 +97,68 @@ def scrape(URL):
 
     #Deletes this odd empty spot in the first index of the list that appears for no reason
     del newPriceList[0]
+    return newPriceList
     
-    accumulator = 0
-    #Simultaneously creates floats of each list value while adding them together
-    for x in range(0,len(newPriceList)):
-        accumulator += float(newPriceList[x])
+def doingtheMath(newpriceList):
+    lenofList = len(newpriceList)
+    discardedPrices = []
+    accumulator1 = 0
+    #Polymorphs the strings in the priceList into floats so we can do math with them.
+    for x in range(0,lenofList):
+        newpriceList[x] = float(newpriceList[x])
 
+    
     #Calculates the mean of the scraped data
-    floatAverage = accumulator/len(newPriceList)
-
+    floatAverage = statistics.mean(newpriceList)
     #Calculates standard deviation of scraped data
-    stdaccumulator = 0
-    for x in range(0,len(newPriceList)):
-        stdaccumulator += (float(newPriceList[x]) - floatAverage) * (float(newPriceList[x]) - floatAverage)
-    accumulator = accumulator *(1/len(newPriceList))
-    standardDev = math.sqrt(accumulator)
+    standardDev = statistics.pstdev(newpriceList)
     
-    #priceList = ebayResultsBS.find_all('span', attrs={'class':'bold'})
-    print(standardDev)
-    #print(priceString)
-    #print(newPriceList)
-    print(floatAverage)
-    return(priceList)
-#print(searchList)
-#webbrowser.open(buildURL(searchList))
-priceList =  scrape(buildURL(searchList))
-#print(priceList)
-#print(len(priceList))
+    print(newpriceList)
+    #If any value in the list is greater than 1.5 SD's away from the mean, discard it
+    for x in range (0,lenofList):
+       standardScore = (newpriceList[x] - floatAverage)/standardDev
 
+       if newpriceList[x] + 100 < floatAverage:
+           discardedPrices.append(newpriceList[x])
+       else:
+            continue
+    
+    #Copies the list for manipulation
+    purgedData = newpriceList
+    
+    #Set Sample Size variable for later use
+    sampleSize = 0
+    theEndPriceList
+    #If the data matches any of the discarded prices, its set to zero. This is the solution I came up with after realizing that for loop ranges aren't dynamic, so removing indicies from the list screws it up
+    for x in range(0,len(purgedData)):
+        if purgedData[x] in discardedPrices:
+            purgedData[x] = 0
+        else:
+            continue
+    #This adds one to the sample size for every piece of data that's greater than zero. This should filter out all of my "non enteries" so that my average isn't messed up in the end
+    for x in range(0,len(purgedData)):
+        if purgedData[x] > 0:
+            sampleSize += 1
+            theEndPriceList.append(purgedData[x])
+        else:
+            continue
+
+    #Resets the accumulator variable which I'm sure I've used before
+    accumulator = 0
+
+    #Accumulating for the average calculation    
+    for x in range(0,len(purgedData)):
+        accumulator += purgedData[x]
+    
+    #Doing the actual average
+    newAverage = accumulator/sampleSize
+
+    #Dictionary for holding data.
+    statisticsDicti = {'Average Price':floatAverage,'Standard Deviation':standardDev, 'New End Average': newAverage}
+    print('The Original Mean: $' + floatAverage)
+    print('The original standard deviation: $' + standardDev)
+    print('The New Average: $' + newAverage)
+    print('The New Standard Deviation: $')
+doingtheMath(scrape(buildURL(searchList)))
 uselessThing = input('Press enter to end.')    
 
