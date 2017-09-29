@@ -73,7 +73,7 @@ def buildURL(searchString):
     #Adds the suffix for URL, includes item condition, results desired, buy it now setting and free shipping (maybe)
     searchURL = searchURL + '&_dcat=27386&rt=nc&LH_ItemCondition=' + conditionCode + '_ipg=2000000000&LH_FS&LH_BIN=1'
     return searchURL
-    
+
 def scrape(URL):
     # This part here combs the site and pulls down the HTML code
     ebayResultsR = requests.get(URL)
@@ -116,11 +116,15 @@ def doingtheMath(newpriceList):
     print(newpriceList)
     #If any value in the list is greater than 1.5 SD's away from the mean, discard it
     for x in range (0,lenofList):
-       standardScore = (newpriceList[x] - floatAverage)/standardDev
+        standardScore = (newpriceList[x] - floatAverage)/standardDev
 
-       if newpriceList[x] + 100 < floatAverage:
-           discardedPrices.append(newpriceList[x])
-       else:
+        if newpriceList[x] + 50 < floatAverage:
+            discardedPrices.append(newpriceList[x])
+
+        elif (newpriceList[x] + 50) > (floatAverage + 50):
+            discardedPrices.append(newpriceList)
+            
+        else:
             continue
     
     #Copies the list for manipulation
@@ -128,7 +132,7 @@ def doingtheMath(newpriceList):
     
     #Set Sample Size variable for later use
     sampleSize = 0
-    theEndPriceList
+    theEndPriceList = []
     #If the data matches any of the discarded prices, its set to zero. This is the solution I came up with after realizing that for loop ranges aren't dynamic, so removing indicies from the list screws it up
     for x in range(0,len(purgedData)):
         if purgedData[x] in discardedPrices:
@@ -152,13 +156,15 @@ def doingtheMath(newpriceList):
     
     #Doing the actual average
     newAverage = accumulator/sampleSize
-
+    newstandardDev = statistics.pstdev(theEndPriceList)
     #Dictionary for holding data.
     statisticsDicti = {'Average Price':floatAverage,'Standard Deviation':standardDev, 'New End Average': newAverage}
-    print('The Original Mean: $' + floatAverage)
-    print('The original standard deviation: $' + standardDev)
-    print('The New Average: $' + newAverage)
-    print('The New Standard Deviation: $')
+    print('The Original Mean: $' + str(floatAverage))
+    print('The original standard deviation: $' + str(standardDev))
+    print('The New Average: $' + str(newAverage))
+    print('The New Standard Deviation: $' + str(newstandardDev))
+
+    
 doingtheMath(scrape(buildURL(searchList)))
 uselessThing = input('Press enter to end.')    
 
