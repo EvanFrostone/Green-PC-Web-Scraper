@@ -73,6 +73,7 @@ def buildURL(searchString):
     #Adds the suffix for URL, includes item condition, results desired, buy it now setting and free shipping (maybe)
     searchURL = searchURL + '&_dcat=27386&rt=nc&LH_ItemCondition=' + conditionCode + '_ipg=2000000000&LH_FS&LH_BIN=1'
     return searchURL
+    print(searchURL)
 
 def scrape(URL):
     # This part here combs the site and pulls down the HTML code
@@ -80,7 +81,7 @@ def scrape(URL):
     ebayResultsBS = bs4.BeautifulSoup(ebayResultsR.text)
 
     #Setting up a regular expression that looks for dollar values of any size
-    priceRexMoney = re.compile(r'\$\d*\.\d{2}')
+    priceRexMoney = re.compile(r'\$\d*\.\d{2}(?!\sshipping)')
 
     #Magics the Soup into a String, then searches it for dollar values
     priceList = priceRexMoney.findall(str(ebayResultsBS))
@@ -118,12 +119,9 @@ def doingtheMath(newpriceList):
     for x in range (0,lenofList):
         standardScore = (newpriceList[x] - floatAverage)/standardDev
 
-        if newpriceList[x] + 50 < floatAverage:
+        if standardScore > .75 or standardScore < -.75:
             discardedPrices.append(newpriceList[x])
-
-        elif (newpriceList[x] + 50) > (floatAverage + 50):
-            discardedPrices.append(newpriceList)
-            
+        
         else:
             continue
     
@@ -152,19 +150,31 @@ def doingtheMath(newpriceList):
 
     #Accumulating for the average calculation    
     for x in range(0,len(purgedData)):
-        accumulator += purgedData[x]
-    
+        accumulator += purgedData[x]    
     #Doing the actual average
     newAverage = accumulator/sampleSize
     newstandardDev = statistics.pstdev(theEndPriceList)
+    e
+        
     #Dictionary for holding data.
     statisticsDicti = {'Average Price':floatAverage,'Standard Deviation':standardDev, 'New End Average': newAverage}
-    print('The Original Mean: $' + str(floatAverage))
-    print('The original standard deviation: $' + str(standardDev))
-    print('The New Average: $' + str(newAverage))
-    print('The New Standard Deviation: $' + str(newstandardDev))
+    #print('The Original Mean: $' + str(floatAverage))
+    #print('The original standard deviation: $' + str(standardDev))
+    #print('The New Average: $' + str(newAverage))
+    #print('The New Standard Deviation: $' + str(newstandardDev))
+    #print(theEndPriceList)
+    #print(discardedPrices)
+    return theEndPriceList
 
+def bubble_sort(sortingList):
+    changed = True
+    while changed:
+        for x in range(len(sortingList)-1):
+            if sortingList[x] > sortingList[x+1]:
+                sortingList
+ 
     
 doingtheMath(scrape(buildURL(searchList)))
+
 uselessThing = input('Press enter to end.')    
 
