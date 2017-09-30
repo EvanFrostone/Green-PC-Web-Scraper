@@ -137,6 +137,7 @@ def doingtheMath(newpriceList):
     #Set Sample Size variable for later use
     sampleSize = 0
     theEndPriceList = []
+    
     #If the data matches any of the discarded prices, its set to zero. This is the solution I came up with after realizing that for loop ranges aren't dynamic, so removing indicies from the list screws it up
     for x in range(0,len(purgedData)):
         if purgedData[x] in discardedPrices:
