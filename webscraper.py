@@ -9,39 +9,46 @@ print('Welcome to the Computer Price Calculator')
 
 def computerDictionaryBuilder():
     #Sets up Generic RAM speed to be used later, and the dictionary for PC Attributes
-    pcAttributes  = {}
+    pcAttributesDictionary  = {}
+    pcAtrributesList = []
     genericRAMSpeedDDR4 = '2133'
     genericRAMSpeedDDR3 = '1333'
 
     #Asks if the PC in question is a laptop and creates appropriate dictionary entry in response
     laptopDesktopQuery = input('Is it a laptop or desktop? ')
     if laptopDesktopQuery.lower() == 'laptop':
-        pcAttributes['Laptop?'] = True
+         pcAttributesDictionary['Laptop?'] = True
     elif laptopDesktopQuery.lower() == 'desktop':
-        pcAttributes['Laptop?'] = False
+         pcAttributesDictionary['Laptop?'] = False
     
     #In the case that it isn't a laptop, asks if its a custom or refurb and creates appropriate dictionary entry
-    if pcAttributes['Laptop?'] == False:
+    if  pcAttributesDictionary['Laptop?'] == False:
         refurbCustomQuery = input('Is it a custom or refurb?')
         if refurbCustomQuery.lower() == 'custom':
-            pcAttributes['Custom?'] = True
+             pcAttributesDictionary['Custom?'] = True
         elif refurbCustomQuery == 'refurb':
-            pcAttributes['Custom?'] = False
+             pcAttributesDictionary['Custom?'] = False
 
     #In the case that it is a laptop, asks for the laptop's model number
-    elif pcAttributes['Laptop'] == True:
-        pcAttributes['Model Number'] = input("What model laptop is it?")
+    elif  pcAttributesDictionary['Laptop'] == True:
+         pcAttributesDictionary['Model Number'] = input("What model laptop is it?")
     
     #In the case that it is a custom PC, asks for the PC's Specs
-    if pcAttributes['Custom?'] == True:
+    if  pcAttributesDictionary['Custom?'] == True:
         print('I\'m going to collect some hardware data now.')
-        pcAttributes['CPU'] = input('What CPU is it?')
-        pcAttributes['RAM Type']= input('What type of RAM does it have? EX(DDR3, DDR4)')
-        pcAttributes['RAM Capacity']= input('How much RAM does it have?')
-        pcAttributes['GPU']= input('What GPU does the computer have?')
-        pcAttributes['Has SSD?'] = input('Does it have an SSD? Enter \'Yes\' or \'No\'')
-        if pcAttributes['Has SSD?'].lower() == 'yes':
-            pcAttributes
+         pcAttributesDictionary['CPU'] = input('What CPU is it?')
+         pcAttributesDictionary['RAM Type']= input('What type of RAM does it have? EX(DDR3, DDR4)')
+         pcAttributesDictionary['RAM Capacity']= input('How much RAM does it have?')
+         pcAttributesDictionary['GPU']= input('What GPU does the computer have?')
+         pcAttributesDictionary['Has SSD?'] = input('Does it have an SSD? Enter \'Yes\' or \'No\'')
+        if  pcAttributesDictionary['Has SSD?'].lower() == 'yes':
+            pcAttributesDictionary['SSD Capacity'] = input('What capacity is the SSD? ')
+        elif pcAttributesDictionary['Has SSD'].lower() == 'no':
+            pcAttributesDictionary['Has HDD'] = 'Yes'
+            pcAttributesDictionary['HDD Capacity'] = input('What is the capacity of the HDD? ')
+    elif pcAttributesDictionary['Custom?'] == False:
+        
+            
 
 #Legacy Search Query for finding out the product search. To be phased out.
 searchQuery = input('What are we searching for? ')
@@ -73,7 +80,6 @@ def buildURL(searchString):
     #Adds the suffix for URL, includes item condition, results desired, buy it now setting and free shipping (maybe)
     searchURL = searchURL + '&_dcat=27386&rt=nc&LH_ItemCondition=' + conditionCode + '_ipg=2000000000&LH_FS&LH_BIN=1'
     return searchURL
-    print(searchURL)
 
 def scrape(URL):
     # This part here combs the site and pulls down the HTML code
@@ -114,7 +120,7 @@ def doingtheMath(newpriceList):
     #Calculates standard deviation of scraped data
     standardDev = statistics.pstdev(newpriceList)
     
-    print(newpriceList)
+    
     #If any value in the list is greater than 1.5 SD's away from the mean, discard it
     for x in range (0,lenofList):
         standardScore = (newpriceList[x] - floatAverage)/standardDev
@@ -154,25 +160,24 @@ def doingtheMath(newpriceList):
     #Doing the actual average
     newAverage = accumulator/sampleSize
     newstandardDev = statistics.pstdev(theEndPriceList)
-    e
+    
         
     #Dictionary for holding data.
-    statisticsDicti = {'Average Price':floatAverage,'Standard Deviation':standardDev, 'New End Average': newAverage}
-    #print('The Original Mean: $' + str(floatAverage))
-    #print('The original standard deviation: $' + str(standardDev))
-    #print('The New Average: $' + str(newAverage))
-    #print('The New Standard Deviation: $' + str(newstandardDev))
-    #print(theEndPriceList)
-    #print(discardedPrices)
-    return theEndPriceList
+    statisticsDicti = {'Average Price':floatAverage,'Standard Deviation':standardDev, 'New End Average': newAverage, 'New Standard Deviation': newstandardDev}
 
-def bubble_sort(sortingList):
-    changed = True
-    while changed:
-        for x in range(len(sortingList)-1):
-            if sortingList[x] > sortingList[x+1]:
-                sortingList
- 
+    #Sorts the data from lowest to highest.
+    theEndPriceList = sorted(theEndPriceList)
+
+    #Makes Entries for the min and max of the data
+    statisticsDicti['New Minimum'] = theEndPriceList[0]
+    statisticsDicti['New Maximum'] = theEndPriceList[len(theEndPriceList)-1]
+
+    #Stores the price list in the dictionary
+    statisticsDicti['New Price List'] = theEndPriceList
+
+    return statisticsDicti
+
+
     
 doingtheMath(scrape(buildURL(searchList)))
 
