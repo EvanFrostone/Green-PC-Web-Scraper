@@ -10,7 +10,10 @@ print('Welcome to the Computer Price Calculator')
 def computerDictionaryBuilder():
     #Sets up Generic RAM speed to be used later, and the dictionary for PC Attributes
     pcAttributesDictionary  = {}
-    pcAtrributesList = []
+    urlList = []
+    defaultsearchString = 'https://www.ebay.com/sch/i.html?_from=R40&_sacat=0&_nkw='
+    defaultURLEnding = '&_dcat=27386&rt=nc&LH_ItemCondition=3000_ipg=2000000000&LH_FS&LH_BIN=1'
+    searchString = ''
     genericRAMSpeedDDR4 = '2133'
     genericRAMSpeedDDR3 = '1333'
 
@@ -32,41 +35,64 @@ def computerDictionaryBuilder():
     #In the case that it is a laptop, asks for the laptop's model number
     elif  pcAttributesDictionary['Laptop'] == True:
          pcAttributesDictionary['Model Number'] = input("What model laptop is it?")
+         searchString = defaultsearchString + pcAttributesDictionary['Model Number'] + defaultURLEnding
+         urlList.append(searchString)
     
     #In the case that it is a custom PC, asks for the PC's Specs
     if  pcAttributesDictionary['Custom?'] == True:
         print('I\'m going to collect some hardware data now.')
-         pcAttributesDictionary['CPU'] = input('What CPU is it?')
-         pcAttributesDictionary['RAM Type']= input('What type of RAM does it have? EX(DDR3, DDR4)')
-         pcAttributesDictionary['RAM Capacity']= input('How much RAM does it have?')
-         pcAttributesDictionary['GPU']= input('What GPU does the computer have?')
-         pcAttributesDictionary['Has SSD?'] = input('Does it have an SSD? Enter \'Yes\' or \'No\'')
+        pcAttributesDictionary['CPU'] = input('What CPU is it?')
+        pcAttributesDictionary['RAM Type']= input('What type of RAM does it have? EX(DDR3, DDR4)')
+        pcAttributesDictionary['RAM Capacity']= input('How much RAM does it have?')
+        pcAttributesDictionary['GPU']= input('What GPU does the computer have?')
+        pcAttributesDictionary['Has SSD?'] = input('Does it have an SSD? Enter \'Yes\' or \'No\'')
         if  pcAttributesDictionary['Has SSD?'].lower() == 'yes':
             pcAttributesDictionary['SSD Capacity'] = input('What capacity is the SSD? ')
+            searchString = defaultsearchString + pcAttributesDictionary['SSD Capacity'] + '%20' + 'SSD'
+            urlList.append(searchString)
+
         elif pcAttributesDictionary['Has SSD'].lower() == 'no':
             pcAttributesDictionary['Has HDD'] = 'Yes'
             pcAttributesDictionary['HDD Capacity'] = input('What is the capacity of the HDD? ')
-    elif pcAttributesDictionary['Custom?'] == False:
+            searchString = defaultsearchString + pcAttributesDictionary['HDD Capacity'] +defaultURLEnding
+            urlList.append(searchString)
         
-            
+        searchString = defaultsearchString + pcAttributesDictionary['CPU'] + defaultURLEnding
+        urlList.append(searchString)
+        searchString = defaultsearchString + pcAttributesDictionary['RAM Type'] + '%20' + pcAttributesDictionary['RAM Capacity'] + defaultURLEnding
+        urlList.append(searchString)
+        searchString = defaultsearchString + pcAttributesDictionary['GPU'] + defaultURLEnding
+        urlList.append(searchString)
+
+    elif pcAttributesDictionary['Custom?'] == False:
+        pcAttributesDictionary['Computer Model Number'] = input('What is the model of the Computer?')
+        searchString = defaultsearchString + pcAttributesDictionary['Computer Model Number'] +defaultURLEnding
+        urList.append(searchString)
+    
+
+
+    return urlList
+
+#Creating the global dictionary that we'll be using.       
+
 
 #Legacy Search Query for finding out the product search. To be phased out.
-searchQuery = input('What are we searching for? ')
+#searchQuery = input('What are we searching for? ')
 
 #Legacy Condition Query for finding out the condition code, to be phased out.
-conditionQuery = input('What item condition are we looking for? ')
+#conditionQuery = input('What item condition are we looking for? ')
 
 #Disects the input string using whitespace seperators, while slipping it into a list
-searchList = searchQuery.split()
+#searchList = searchQuery.split()
 
 #Sets the condition code for later use in URL building
-if conditionQuery.lower() == 'used':
-    conditionCode = '3000'
+#if conditionQuery.lower() == 'used':
+    #conditionCode = '3000'
 
-elif conditionQuery.lower() == 'new':
+#elif conditionQuery.lower() == 'new':
     conditionCode = '1000'
-else:
-    print('Error')
+#else:
+    #print('Error')
 
 def buildURL(searchString):
     #The required prefix for every ebay search URL
@@ -180,7 +206,8 @@ def doingtheMath(newpriceList):
 
 
     
-doingtheMath(scrape(buildURL(searchList)))
+#doingtheMath(scrape(buildURL(searchList)))
+print(computerDictionaryBuilder())
 
 uselessThing = input('Press enter to end.')    
 
