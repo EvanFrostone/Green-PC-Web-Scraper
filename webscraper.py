@@ -48,13 +48,13 @@ def computerDictionaryBuilder():
         pcAttributesDictionary['Has SSD?'] = input('Does it have an SSD? Enter \'Yes\' or \'No\'')
         if  pcAttributesDictionary['Has SSD?'].lower() == 'yes':
             pcAttributesDictionary['SSD Capacity'] = input('What capacity is the SSD? ')
-            searchString = defaultsearchString + pcAttributesDictionary['SSD Capacity'] + '%20' + 'SSD'
+            searchString = defaultsearchString + pcAttributesDictionary['SSD Capacity'] + '%20' + 'SSD' + defaultURLEnding
             urlList.append(searchString)
 
-        elif pcAttributesDictionary['Has SSD'].lower() == 'no':
+        elif pcAttributesDictionary['Has SSD?'].lower() == 'no':
             pcAttributesDictionary['Has HDD'] = 'Yes'
             pcAttributesDictionary['HDD Capacity'] = input('What is the capacity of the HDD? ')
-            searchString = defaultsearchString + pcAttributesDictionary['HDD Capacity'] +defaultURLEnding
+            searchString = defaultsearchString + pcAttributesDictionary['HDD Capacity'] + defaultURLEnding
             urlList.append(searchString)
         
         searchString = defaultsearchString + pcAttributesDictionary['CPU'] + defaultURLEnding
@@ -106,6 +106,92 @@ def buildURL(searchString):
     #Adds the suffix for URL, includes item condition, results desired, buy it now setting and free shipping (maybe)
     searchURL = searchURL + '&_dcat=27386&rt=nc&LH_ItemCondition=' + conditionCode + '_ipg=2000000000&LH_FS&LH_BIN=1'
     return searchURL
+
+def iterativeScrape(urlList):
+    additiveList = []
+    for x in range(0,len(urlList)):
+        # This part here combs the site and pulls down the HTML code
+        ebayResultsR = requests.get(urlList)
+        ebayResultsBS = bs4.BeautifulSoup(ebayResultsR.text)
+
+        #Setting up a regular expression that looks for dollar values of any size
+        priceRexMoney = re.compile(r'\$\d*\.\d{2}(?!\sshipping)')
+
+        #Magics the Soup into a String, then searches it for dollar values
+        priceList = priceRexMoney.findall(str(ebayResultsBS))
+
+        #Combines priceList into a single string
+        for x in range(0,len(priceList)):
+            if x == 0:
+                priceString = priceList[x] + priceList[x+1]
+            else:
+                priceString = priceString + priceList[x]
+
+        #Seperates that string to get rid of the dollar signs
+        newPriceList = priceString.split('$')
+
+        #Deletes this odd empty spot in the first index of the list that appears for no reason
+        del newPriceList[0]
+        lenofList = len(newpriceList)
+        discardedPrices = []
+        accumulator1 = 0
+        #Polymorphs the strings in the priceList into floats so we can do math with them.
+        for x in range(0,lenofList):
+            newpriceList[x] = float(newpriceList[x])
+
+        
+        #Calculates the mean of the scraped data
+        floatAverage = statistics.mean(newpriceList)
+        #Calculates standard deviation of scraped data
+        standardDev = statistics.pstdev(newpriceList)
+        
+        
+        #If any value in the list is greater than 1.5 SD's away from the mean, discard it
+        for x in range (0,lenofList):
+            standardScore = (newpriceList[x] - floatAverage)/standardDev
+
+            if standardScore > .75 or standardScore < -.75:
+                discardedPrices.append(newpriceList[x])
+            
+            else:
+                continue
+        
+        #Copies the list for manipulation
+        purgedData = newpriceList
+        
+        #Set Sample Size variable for later use
+        sampleSize = 0
+        theEndPriceList = []
+        
+        #If the data matches any of the discarded prices, its set to zero. This is the solution I came up with after realizing that for loop ranges aren't dynamic, so removing indicies from the list screws it up
+        for x in range(0,len(purgedData)):
+            if purgedData[x] in discardedPrices:
+                purgedData[x] = 0
+            else:
+                continue
+        #This adds one to the sample size for every piece of data that's greater than zero. This should filter out all of my "non enteries" so that my average isn't messed up in the end
+        for x in range(0,len(purgedData)):
+            if purgedData[x] > 0:
+                sampleSize += 1
+                theEndPriceList.append(purgedData[x])
+            else:
+                continue
+
+        #Resets the accumulator variable which I'm sure I've used before
+        accumulator = 0
+
+        #Accumulating for the average calculation    
+        for x in range(0,len(purgedData)):
+            accumulator += purgedData[x]    
+        #Doing the actual average
+        newAverage = accumulator/sampleSize
+        newstandardDev = statistics.pstdev(theEndPriceList)
+
+        additiveList.append(newAverage)
+    print(additiveList)
+    
+    
+    
 
 def scrape(URL):
     # This part here combs the site and pulls down the HTML code
@@ -207,7 +293,7 @@ def doingtheMath(newpriceList):
 
     
 #doingtheMath(scrape(buildURL(searchList)))
-print(computerDictionaryBuilder())
+iterativeScrape(computerDictionaryBuilder())
 
 uselessThing = input('Press enter to end.')    
 
